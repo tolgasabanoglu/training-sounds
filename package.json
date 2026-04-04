@@ -47,7 +47,12 @@
             "clustering": true,
             "svm": true,
             "boosting": true,
-            "dimensionality": true
+            "dimensionality": true,
+            "transformer": true,
+            "cnn": true,
+            "rnn": true,
+            "diffusion": true,
+            "reinforcement": true
           }
         }
       }

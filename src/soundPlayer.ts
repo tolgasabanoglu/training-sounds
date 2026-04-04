@@ -14,13 +14,18 @@ import { AlgorithmFamily, Action } from "./detectors";
 
 // Maps (family, action) → sound filename in the sounds/ directory
 const SOUND_MAP: Record<AlgorithmFamily, Record<Action, string>> = {
-  linearModels:   { start: "linear_start.mp3",    complete: "complete.mp3" },
-  randomForest:   { start: "forest_start.mp3",     complete: "complete.mp3" },
-  neuralNetwork:  { start: "neural_start.mp3",     complete: "neural_complete.mp3" },
-  clustering:     { start: "cluster_start.mp3",    complete: "cluster_complete.mp3" },
-  svm:            { start: "svm_start.mp3",        complete: "complete.mp3" },
-  boosting:       { start: "boost_start.mp3",      complete: "complete.mp3" },
-  dimensionality: { start: "pca_start.mp3",        complete: "complete.mp3" },
+  linearModels:   { start: "linear_start.mp3",       complete: "complete.mp3" },
+  randomForest:   { start: "forest_start.mp3",        complete: "complete.mp3" },
+  neuralNetwork:  { start: "neural_start.mp3",        complete: "neural_complete.mp3" },
+  clustering:     { start: "cluster_start.mp3",       complete: "cluster_complete.mp3" },
+  svm:            { start: "svm_start.mp3",           complete: "complete.mp3" },
+  boosting:       { start: "boost_start.mp3",         complete: "complete.mp3" },
+  dimensionality: { start: "pca_start.mp3",           complete: "complete.mp3" },
+  transformer:    { start: "transformer_start.mp3",   complete: "transformer_complete.mp3" },
+  cnn:            { start: "cnn_start.mp3",           complete: "complete.mp3" },
+  rnn:            { start: "rnn_start.mp3",           complete: "complete.mp3" },
+  diffusion:      { start: "diffusion_start.mp3",     complete: "diffusion_complete.mp3" },
+  reinforcement:  { start: "rl_start.mp3",            complete: "rl_complete.mp3" },
 };
 
 // Fallback sound if a specific file is missing

@@ -25,6 +25,11 @@ Linear regression gets a clean chime. Random forest gets rustling. Neural networ
 | SVM | `SVC`, `SVR`, `LinearSVC`, optimization output |
 | Gradient Boosting | `XGBoost`, `LightGBM`, `CatBoost`, `GradientBoosting` |
 | Dimensionality Reduction | `PCA`, `UMAP`, `t-SNE` |
+| Transformers | Hugging Face `Trainer`, `from_pretrained`, BERT, GPT-2, T5 |
+| CNN | `Conv2d`, ResNet, VGG, EfficientNet, MobileNet, `torchvision.models` |
+| RNN / LSTM / GRU | `nn.LSTM`, `nn.GRU`, Keras LSTM, Bidirectional |
+| Diffusion Models | `StableDiffusionPipeline`, `DDPMScheduler`, `diffusers` |
+| Reinforcement Learning | PPO, DQN, A2C, SAC, `gym.make`, Stable Baselines3 |
 
 ## Setup
 

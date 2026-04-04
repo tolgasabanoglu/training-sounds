@@ -15,7 +15,12 @@ export type AlgorithmFamily =
   | "clustering"
   | "svm"
   | "boosting"
-  | "dimensionality";
+  | "dimensionality"
+  | "transformer"
+  | "cnn"
+  | "rnn"
+  | "diffusion"
+  | "reinforcement";
 
 export type Action = "start" | "complete";
 
@@ -69,6 +74,39 @@ export const TERMINAL_PATTERNS: DetectorPattern[] = [
 
   // Generic completion signals
   { regex: /accuracy[:=\s]+([\d.]+)|score[:=\s]+([\d.]+)|R²|r2_score/i, event: { family: "linearModels", action: "complete", label: "Model" } },
+
+  // ------------------------------------------------------------------
+  // Deep Learning
+  // ------------------------------------------------------------------
+
+  // Transformers — Hugging Face Trainer API
+  { regex: /\{'loss':\s*[\d.]+|'eval_loss':\s*[\d.]+/i, event: { family: "transformer", action: "start", label: "Transformer" } },
+  { regex: /Step\s+\d+\/\d+|steps_per_second|Training loss/i, event: { family: "transformer", action: "start", label: "Transformer" } },
+  { regex: /BertModel|GPT2Model|T5ForConditionalGeneration|AutoModel|from_pretrained/i, event: { family: "transformer", action: "start", label: "Transformer" } },
+  { regex: /Trainer\.train|trainer\.train\(\)|TrainingArguments/i, event: { family: "transformer", action: "start", label: "Transformer" } },
+  { regex: /\*\*\*\*\* Running training \*\*\*\*\*/i, event: { family: "transformer", action: "start", label: "Transformer" } },
+  { regex: /train_runtime|train_samples_per_second/i, event: { family: "transformer", action: "complete", label: "Transformer" } },
+
+  // CNNs — PyTorch / Keras / TF
+  { regex: /Conv2d|Conv1d|ConvTranspose|MaxPool2d|conv2d\s*\(/i, event: { family: "cnn", action: "start", label: "CNN" } },
+  { regex: /Sequential.*Conv|torchvision|resnet|vgg|efficientnet|mobilenet/i, event: { family: "cnn", action: "start", label: "CNN" } },
+  { regex: /from torchvision|torchvision\.models|tf\.keras\.applications/i, event: { family: "cnn", action: "start", label: "CNN" } },
+
+  // RNNs / LSTMs / GRUs
+  { regex: /LSTM|GRU|RNN|LSTMCell|GRUCell|nn\.LSTM|nn\.GRU/i, event: { family: "rnn", action: "start", label: "RNN/LSTM" } },
+  { regex: /SimpleRNN|Bidirectional.*LSTM|return_sequences/i, event: { family: "rnn", action: "start", label: "RNN/LSTM" } },
+
+  // Diffusion models
+  { regex: /diffusers|StableDiffusionPipeline|DDPMScheduler|DDIMScheduler/i, event: { family: "diffusion", action: "start", label: "Diffusion Model" } },
+  { regex: /noise_scheduler|unet\.forward|denoising step/i, event: { family: "diffusion", action: "start", label: "Diffusion Model" } },
+  { regex: /100%.*diffusion|Generating.*image/i, event: { family: "diffusion", action: "complete", label: "Diffusion Model" } },
+
+  // Reinforcement Learning — Stable Baselines3 / Gymnasium / RLlib
+  { regex: /stable[_-]baselines|PPO|A2C|DQN|SAC|TD3|DDPG/i, event: { family: "reinforcement", action: "start", label: "Reinforcement Learning" } },
+  { regex: /gymnasium|gym\.make|env\.reset|env\.step/i, event: { family: "reinforcement", action: "start", label: "Reinforcement Learning" } },
+  { regex: /mean_reward|ep_rew_mean|rollout\/ep_rew_mean/i, event: { family: "reinforcement", action: "start", label: "Reinforcement Learning" } },
+  { regex: /total_timesteps|num_timesteps/i, event: { family: "reinforcement", action: "start", label: "Reinforcement Learning" } },
+  { regex: /Training finished|Model saved|Best mean reward/i, event: { family: "reinforcement", action: "complete", label: "Reinforcement Learning" } },
 ];
 
 // ------------------------------------------------------------------
@@ -95,6 +133,27 @@ export const CODE_PATTERNS: DetectorPattern[] = [
 
   // PCA
   { regex: /PCA\s*\(|TSNE\s*\(|umap\.UMAP\s*\(/i, event: { family: "dimensionality", action: "start", label: "Dimensionality Reduction" } },
+
+  // ------------------------------------------------------------------
+  // Deep Learning
+  // ------------------------------------------------------------------
+
+  // Transformers
+  { regex: /AutoModel|AutoModelForSequenceClassification|BertModel|GPT2|T5|from_pretrained\s*\(/i, event: { family: "transformer", action: "start", label: "Transformer" } },
+  { regex: /Trainer\s*\(|TrainingArguments\s*\(/i, event: { family: "transformer", action: "start", label: "Transformer" } },
+
+  // CNNs
+  { regex: /nn\.Conv2d\s*\(|nn\.Conv1d\s*\(|torchvision\.models\.|tf\.keras\.applications\./i, event: { family: "cnn", action: "start", label: "CNN" } },
+  { regex: /ResNet|VGG|EfficientNet|MobileNet|InceptionV/i, event: { family: "cnn", action: "start", label: "CNN" } },
+
+  // RNNs / LSTMs
+  { regex: /nn\.LSTM\s*\(|nn\.GRU\s*\(|nn\.RNN\s*\(|keras\.layers\.LSTM\s*\(/i, event: { family: "rnn", action: "start", label: "RNN/LSTM" } },
+
+  // Diffusion
+  { regex: /StableDiffusionPipeline\s*\(|DDPMScheduler\s*\(|diffusers\./i, event: { family: "diffusion", action: "start", label: "Diffusion Model" } },
+
+  // Reinforcement Learning
+  { regex: /PPO\s*\(|A2C\s*\(|DQN\s*\(|SAC\s*\(|gym\.make\s*\(|gymnasium\.make\s*\(/i, event: { family: "reinforcement", action: "start", label: "Reinforcement Learning" } },
 ];
 
 /**
