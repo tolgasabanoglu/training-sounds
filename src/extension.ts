@@ -37,6 +37,56 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   // ------------------------------------------------------------------
+  // 3. Notebook cell execution listener
+  // Fires when a notebook cell starts or finishes executing.
+  // Scans cell source on start, cell output on complete.
+  // ------------------------------------------------------------------
+  const notebookExecutionListener = vscode.notebooks.onDidChangeNotebookCellExecutionState((e) => {
+    const cell = e.cell;
+
+    // Only handle code cells
+    if (cell.kind !== vscode.NotebookCellKind.Code) {
+      return;
+    }
+
+    if (e.state === vscode.NotebookCellExecutionState.Executing) {
+      // Cell just started — scan source code for algorithm patterns
+      const source = cell.document.getText();
+      const sourceEvent = detectInText(source, CODE_PATTERNS);
+      if (sourceEvent) {
+        player.play(sourceEvent.family, "start");
+        showStatusMessage(sourceEvent.label, "start");
+      }
+    }
+
+    if (e.state === vscode.NotebookCellExecutionState.Idle) {
+      // Cell finished — scan outputs for completion signals
+      for (const output of cell.outputs) {
+        for (const item of output.items) {
+          // Output items are typed (text/plain, text/html, etc.)
+          if (item.mime.startsWith("text/")) {
+            const text = Buffer.from(item.data).toString("utf8");
+            const outputEvent = detectInText(text, TERMINAL_PATTERNS);
+            if (outputEvent) {
+              player.play(outputEvent.family, outputEvent.action);
+              showStatusMessage(outputEvent.label, outputEvent.action);
+              return;
+            }
+          }
+        }
+      }
+
+      // No recognizable output — re-scan source for completion fallback
+      const source = cell.document.getText();
+      const sourceEvent = detectInText(source, CODE_PATTERNS);
+      if (sourceEvent) {
+        player.play(sourceEvent.family, "complete");
+        showStatusMessage(sourceEvent.label, "complete");
+      }
+    }
+  });
+
+  // ------------------------------------------------------------------
   // Commands
   // ------------------------------------------------------------------
   const toggleCmd = vscode.commands.registerCommand("trainingSounds.toggle", () => {
@@ -57,6 +107,11 @@ export function activate(context: vscode.ExtensionContext) {
       "svm",
       "boosting",
       "dimensionality",
+      "transformer",
+      "cnn",
+      "rnn",
+      "diffusion",
+      "reinforcement",
     ] as const;
 
     const pick = await vscode.window.showQuickPick(
@@ -70,7 +125,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
   });
 
-  context.subscriptions.push(terminalListener, saveListener, toggleCmd, testCmd);
+  context.subscriptions.push(terminalListener, saveListener, notebookExecutionListener, toggleCmd, testCmd);
 
   console.log("[training-sounds] Extension activated.");
 }
