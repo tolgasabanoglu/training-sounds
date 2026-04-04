@@ -8,6 +8,8 @@ Linear regression gets a clean chime. Random forest gets rustling. Neural networ
 
 **Terminal listener** — watches integrated terminal output for recognizable strings from sklearn, PyTorch, XGBoost, LightGBM, and others.
 
+**Notebook cell listener** — fires on cell execution start and completion in `.ipynb` files.
+
 **Save-time detection** — scans Python files on save for algorithm instantiation patterns.
 
 **Two sound events per algorithm:**
@@ -30,6 +32,35 @@ Linear regression gets a clean chime. Random forest gets rustling. Neural networ
 | RNN / LSTM / GRU | `nn.LSTM`, `nn.GRU`, Keras LSTM, Bidirectional |
 | Diffusion Models | `StableDiffusionPipeline`, `DDPMScheduler`, `diffusers` |
 | Reinforcement Learning | PPO, DQN, A2C, SAC, `gym.make`, Stable Baselines3 |
+
+## Planned features
+
+### Error & failure sounds
+Detect Python tracebacks and exceptions in terminal output or cell output and play a distinct failure sound. No more staring at the screen — you'll hear when something breaks.
+
+### Desktop notifications for long runs
+When training takes longer than a configurable threshold (default: 30 seconds), fire a native OS desktop notification so you can leave and come back. The notification includes the algorithm name and elapsed time.
+
+### Roast mode
+If your model accuracy is detected as low (< 60%) in terminal or cell output, play a sad trombone instead of the usual complete sound. Configurable threshold.
+
+### Streaks
+Play a special sound when you train 5+ models in one session. Reward consistency.
+
+### Mood themes
+Swap the entire sound pack in one setting: lo-fi, 8-bit arcade, cinematic, nature. Same triggers, different personality.
+
+### Training counter
+Status bar item showing how many models you've trained today and total training time.
+
+### Failure / overfitting warning
+Detect overfitting signals (`train accuracy >> val accuracy`) in output and play a warning tone.
+
+### Progress ticks
+For long training runs, play a soft tick every 30 seconds so you know it's still running without looking at the screen.
+
+### Training receipt
+Generate a fun summary of your session — algorithms run, total training time, best accuracy — shareable as an image.
 
 ## Setup
 
