@@ -1,0 +1,80 @@
+{
+  "name": "training-sounds",
+  "displayName": "Training Sounds",
+  "description": "Play sounds when your ML algorithms run — linear regression, random forest, neural networks, and more.",
+  "version": "0.1.0",
+  "publisher": "tolgasabanoglu",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other"],
+  "keywords": ["machine learning", "sound", "sklearn", "pytorch", "fun"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Training Sounds",
+      "properties": {
+        "trainingSounds.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable or disable all training sounds."
+        },
+        "trainingSounds.volume": {
+          "type": "number",
+          "default": 0.7,
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Sound volume (0 = mute, 1 = full)."
+        },
+        "trainingSounds.playOnStart": {
+          "type": "boolean",
+          "default": true,
+          "description": "Play a sound when an algorithm starts."
+        },
+        "trainingSounds.playOnComplete": {
+          "type": "boolean",
+          "default": true,
+          "description": "Play a sound when training completes."
+        },
+        "trainingSounds.algorithms": {
+          "type": "object",
+          "description": "Enable/disable sounds per algorithm family.",
+          "default": {
+            "linearModels": true,
+            "randomForest": true,
+            "neuralNetwork": true,
+            "clustering": true,
+            "svm": true,
+            "boosting": true,
+            "dimensionality": true
+          }
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "trainingSounds.toggle",
+        "title": "Training Sounds: Toggle On/Off"
+      },
+      {
+        "command": "trainingSounds.testSound",
+        "title": "Training Sounds: Test Sound"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0"
+  }
+}
