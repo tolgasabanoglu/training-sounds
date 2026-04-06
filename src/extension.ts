@@ -11,22 +11,23 @@ export function activate(context: vscode.ExtensionContext) {
   // 1. Terminal output listener
   // Fires on every chunk written to any integrated terminal.
   // ------------------------------------------------------------------
-  const terminalListener = vscode.window.onDidWriteTerminalData((e) => {
-    const event = detectInText(e.data, TERMINAL_PATTERNS);
-    if (event) {
-      player.play(event.family, event.action);
-      showStatusMessage(event.label, event.action);
+  const terminalListener = (vscode.window as any).onDidWriteTerminalData(
+    (e: { data: string }) => {
+      const event = detectInText(e.data, TERMINAL_PATTERNS);
+      if (event) {
+        player.play(event.family, event.action);
+        showStatusMessage(event.label, event.action);
+      }
     }
-  });
+  );
 
   // ------------------------------------------------------------------
   // 2. Document save listener
-  // Scans the saved file for algorithm instantiation patterns.
-  // Triggers a "start" sound — a heads-up that training is about to run.
+  // Scans the saved Python file for algorithm instantiation patterns.
   // ------------------------------------------------------------------
   const saveListener = vscode.workspace.onDidSaveTextDocument((doc) => {
     const lang = doc.languageId;
-    if (lang !== "python" && lang !== "jupyter") {
+    if (lang !== "python") {
       return;
     }
     const text = doc.getText();
@@ -38,50 +39,58 @@ export function activate(context: vscode.ExtensionContext) {
 
   // ------------------------------------------------------------------
   // 3. Notebook cell execution listener
-  // Fires when a notebook cell starts or finishes executing.
-  // Scans cell source on start, cell output on complete.
+  // Uses onDidChangeNotebookDocument (stable API) to detect when a cell
+  // transitions from executing to idle (i.e. just finished running).
   // ------------------------------------------------------------------
-  const notebookExecutionListener = vscode.notebooks.onDidChangeNotebookCellExecutionState((e) => {
-    const cell = e.cell;
+  const notebookListener = vscode.workspace.onDidChangeNotebookDocument((e) => {
+    for (const cellChange of e.cellChanges) {
+      const cell = cellChange.cell;
 
-    // Only handle code cells
-    if (cell.kind !== vscode.NotebookCellKind.Code) {
-      return;
-    }
-
-    if (e.state === vscode.NotebookCellExecutionState.Executing) {
-      // Cell just started — scan source code for algorithm patterns
-      const source = cell.document.getText();
-      const sourceEvent = detectInText(source, CODE_PATTERNS);
-      if (sourceEvent) {
-        player.play(sourceEvent.family, "start");
-        showStatusMessage(sourceEvent.label, "start");
+      if (cell.kind !== vscode.NotebookCellKind.Code) {
+        continue;
       }
-    }
 
-    if (e.state === vscode.NotebookCellExecutionState.Idle) {
-      // Cell finished — scan outputs for completion signals
-      for (const output of cell.outputs) {
-        for (const item of output.items) {
-          // Output items are typed (text/plain, text/html, etc.)
-          if (item.mime.startsWith("text/")) {
-            const text = Buffer.from(item.data).toString("utf8");
-            const outputEvent = detectInText(text, TERMINAL_PATTERNS);
-            if (outputEvent) {
-              player.play(outputEvent.family, outputEvent.action);
-              showStatusMessage(outputEvent.label, outputEvent.action);
-              return;
-            }
-          }
+      const summary = cell.executionSummary;
+
+      // Cell just started executing (no end time yet)
+      if (summary && summary.timing && !summary.timing.endTime) {
+        const source = cell.document.getText();
+        const sourceEvent = detectInText(source, CODE_PATTERNS);
+        if (sourceEvent) {
+          player.play(sourceEvent.family, "start");
+          showStatusMessage(sourceEvent.label, "start");
         }
       }
 
-      // No recognizable output — re-scan source for completion fallback
-      const source = cell.document.getText();
-      const sourceEvent = detectInText(source, CODE_PATTERNS);
-      if (sourceEvent) {
-        player.play(sourceEvent.family, "complete");
-        showStatusMessage(sourceEvent.label, "complete");
+      // Cell just finished (has both start and end time)
+      if (summary && summary.timing && summary.timing.endTime) {
+        // First scan cell outputs for recognizable completion signals
+        let handled = false;
+        for (const output of cell.outputs) {
+          for (const item of output.items) {
+            if (item.mime.startsWith("text/")) {
+              const text = Buffer.from(item.data).toString("utf8");
+              const outputEvent = detectInText(text, TERMINAL_PATTERNS);
+              if (outputEvent) {
+                player.play(outputEvent.family, outputEvent.action);
+                showStatusMessage(outputEvent.label, outputEvent.action);
+                handled = true;
+                break;
+              }
+            }
+          }
+          if (handled) { break; }
+        }
+
+        // Fallback — play complete sound based on source if no output matched
+        if (!handled) {
+          const source = cell.document.getText();
+          const sourceEvent = detectInText(source, CODE_PATTERNS);
+          if (sourceEvent) {
+            player.play(sourceEvent.family, "complete");
+            showStatusMessage(sourceEvent.label, "complete");
+          }
+        }
       }
     }
   });
@@ -125,7 +134,13 @@ export function activate(context: vscode.ExtensionContext) {
     }
   });
 
-  context.subscriptions.push(terminalListener, saveListener, notebookExecutionListener, toggleCmd, testCmd);
+  context.subscriptions.push(
+    terminalListener,
+    saveListener,
+    notebookListener,
+    toggleCmd,
+    testCmd
+  );
 
   console.log("[training-sounds] Extension activated.");
 }

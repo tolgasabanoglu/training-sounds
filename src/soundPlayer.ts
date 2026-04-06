@@ -29,7 +29,7 @@ const SOUND_MAP: Record<AlgorithmFamily, Record<Action, string>> = {
 };
 
 // Fallback sound if a specific file is missing
-const FALLBACK_SOUND = "complete.mp3";
+const FALLBACK_SOUND = "test.wav";
 
 export class SoundPlayer {
   private extensionPath: string;
