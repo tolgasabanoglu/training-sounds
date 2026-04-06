@@ -10,6 +10,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as cp from "child_process";
+import * as fs from "fs";
 import { AlgorithmFamily, Action } from "./detectors";
 
 // Maps (family, action) → sound filename in the sounds/ directory
@@ -67,9 +68,14 @@ export class SoundPlayer {
     this.lastPlayed.set(key, now);
 
     const filename = SOUND_MAP[family]?.[action] ?? FALLBACK_SOUND;
-    const soundPath = path.join(this.extensionPath, "sounds", filename);
-    const volume = config.get<number>("volume", 0.7);
+    let soundPath = path.join(this.extensionPath, "sounds", filename);
 
+    // Fall back to test.wav if the specific sound file doesn't exist
+    if (!fs.existsSync(soundPath)) {
+      soundPath = path.join(this.extensionPath, "sounds", FALLBACK_SOUND);
+    }
+
+    const volume = config.get<number>("volume", 0.7);
     this._play(soundPath, volume);
   }
 

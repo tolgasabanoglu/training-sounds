@@ -8,18 +8,18 @@ export function activate(context: vscode.ExtensionContext) {
   player = new SoundPlayer(context.extensionPath);
 
   // ------------------------------------------------------------------
-  // 1. Terminal output listener
-  // Fires on every chunk written to any integrated terminal.
+  // 1. Terminal listener via shell integration (stable API)
+  // onDidEndTerminalShellExecution fires when a terminal command finishes.
+  // We scan the command string for algorithm patterns.
   // ------------------------------------------------------------------
-  const terminalListener = (vscode.window as any).onDidWriteTerminalData(
-    (e: { data: string }) => {
-      const event = detectInText(e.data, TERMINAL_PATTERNS);
-      if (event) {
-        player.play(event.family, event.action);
-        showStatusMessage(event.label, event.action);
-      }
+  const terminalListener = vscode.window.onDidEndTerminalShellExecution((e) => {
+    const cmd = e.execution.commandLine.value;
+    const event = detectInText(cmd, CODE_PATTERNS);
+    if (event) {
+      player.play(event.family, e.exitCode === 0 ? "complete" : "complete");
+      showStatusMessage(event.label, "complete");
     }
-  );
+  });
 
   // ------------------------------------------------------------------
   // 2. Document save listener
